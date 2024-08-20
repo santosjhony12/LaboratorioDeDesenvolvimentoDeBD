@@ -1,34 +1,14 @@
 package br.gov.sp.fatec.projeto_spring20242.service;
 
 import java.util.List;
-import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+
 import br.gov.sp.fatec.projeto_spring20242.entity.Usuario;
-import br.gov.sp.fatec.projeto_spring20242.repository.UsuarioRepository;
 
-@Service
-public class UsuarioService {
- 
-    @Autowired
-    private UsuarioRepository usuarioRepo;
+public interface UsuarioService {
 
-    public Usuario buscarPorId(Long id) {
-        Optional<Usuario> usuarioOp = usuarioRepo.findById(id);
+    public Usuario createUsuario(Usuario usuario);
 
-        if(usuarioOp.isPresent()) {
-            return usuarioOp.get();
-        }
-        throw new IllegalArgumentException("Id inválido!");
-    }
-    public Usuario novoUsuario(Usuario usuario) {
-        if(usuario == null || usuario.getNome() == null || usuario.getSenha() == null) {
-            throw new IllegalArgumentException("Nome e senha inválidos!");
-        }
-        return usuarioRepo.save(usuario);
-    }
+    public List<Usuario> getAllUsuarios();
 
-    public List<Usuario> buscarTodos() {
-        return usuarioRepo.findAll();
-    }
+    public Usuario getById(Long id);
 }
