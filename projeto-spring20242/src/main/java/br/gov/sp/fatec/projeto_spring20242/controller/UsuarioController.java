@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 import br.gov.sp.fatec.projeto_spring20242.entity.Usuario;
+import br.gov.sp.fatec.projeto_spring20242.entity.View;
 import br.gov.sp.fatec.projeto_spring20242.service.UsuarioService;
 
 @RestController
@@ -25,16 +28,19 @@ public class UsuarioController {
     private UsuarioService usuarioService;
       
     @GetMapping
+    @JsonView(View.ViewUsuarioCompleto.class)
     public ResponseEntity<List<Usuario>> getAll(){
         return ResponseEntity.ok().body(usuarioService.getAllUsuarios());
     }
 
     @PostMapping
+    @JsonView(View.ViewUsuario.class)
     public ResponseEntity<Usuario> create(@RequestBody Usuario usuario){
         return ResponseEntity.status(HttpStatus.CREATED).body(usuarioService.createUsuario(usuario));
     }
 
     @GetMapping(value = "/{id}")
+    @JsonView(View.ViewUsuario.class)
     public ResponseEntity<Usuario> getById(@PathVariable("id") Long id){
         return ResponseEntity.ok().body(usuarioService.getById(id));
     }
