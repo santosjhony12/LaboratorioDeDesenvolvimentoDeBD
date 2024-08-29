@@ -14,11 +14,15 @@ import HelloWorld from './components/HelloWorld.vue';
       <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>
+        <RouterLink to="/usuario">Usuarios</RouterLink>
+
+        <!--O RouterLink serve para não recarregar a page-->
       </nav>
     </div>
   </header>
-
+<!--O RouterView eu coloco onde eu quero mostrar o meu conteudo-->
   <RouterView />
+
 </template>
 
 <style scoped>

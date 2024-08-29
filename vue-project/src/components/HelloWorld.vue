@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// Todo parametro é uma props e eu preciso declarar no defineProps. Ele se torna uma variavel interna
 defineProps<{
   msg: string
 }>()
