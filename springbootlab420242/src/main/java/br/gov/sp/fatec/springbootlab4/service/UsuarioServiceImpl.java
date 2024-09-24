@@ -1,43 +1,46 @@
-package br.gov.sp.fatec.projeto_spring20242.service;
+package br.gov.sp.fatec.springbootlab4.service;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import br.gov.sp.fatec.projeto_spring20242.entity.Anotacao;
-import br.gov.sp.fatec.projeto_spring20242.entity.Autorizacao;
-import br.gov.sp.fatec.projeto_spring20242.entity.Usuario;
-import br.gov.sp.fatec.projeto_spring20242.repository.AnotacaoRepository;
-import br.gov.sp.fatec.projeto_spring20242.repository.AutorizacaoRepository;
-import br.gov.sp.fatec.projeto_spring20242.repository.UsuarioRepository;
+import br.gov.sp.fatec.springbootlab4.entity.Anotacao;
+import br.gov.sp.fatec.springbootlab4.entity.Autorizacao;
+import br.gov.sp.fatec.springbootlab4.entity.Usuario;
+import br.gov.sp.fatec.springbootlab4.repository.AnotacaoRepository;
+import br.gov.sp.fatec.springbootlab4.repository.AutorizacaoRepository;
+import br.gov.sp.fatec.springbootlab4.repository.UsuarioRepository;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
 
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioRepository repo;
 
     private final AutorizacaoRepository autRepo;
 
     private final AnotacaoRepository anotacaoRepo;
 
+    private final PasswordEncoder encoder;
 
-    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, AutorizacaoRepository autRepo, AnotacaoRepository anotacaoRepo) {
-        this.usuarioRepository = usuarioRepository;
+    public UsuarioServiceImpl(UsuarioRepository repo, AutorizacaoRepository autRepo, AnotacaoRepository anotacaoRepo, PasswordEncoder encoder) {
+        this.repo = repo;
         this.autRepo = autRepo;
         this.anotacaoRepo = anotacaoRepo;
+        this.encoder = encoder;
     }
 
-
-    @Transactional // Abre uma transação no banco de dados. Ele não commita até que tudo ocorra bem
+    @Transactional
     @Override
-    public Usuario createUsuario(Usuario usuario) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
+    public Usuario novoUsuario(Usuario usuario) {
         if(usuario == null ||
                 usuario.getNome() == null ||
                 usuario.getNome().isBlank() ||
@@ -61,7 +64,8 @@ public class UsuarioServiceImpl implements UsuarioService {
             }
             usuario.setAutorizacoes(autorizacoes);
         }
-        usuario = usuarioRepository.save(usuario);
+        usuario.setSenha(encoder.encode(usuario.getSenha()));
+        usuario = repo.save(usuario);
         if(usuario.getAnotacoes() != null && !usuario.getAnotacoes().isEmpty()) {
             for(Anotacao anotacao: usuario.getAnotacoes()) {
                 anotacao.setUsuario(usuario);
@@ -81,18 +85,19 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public List<Usuario> getAllUsuarios() {
-        return usuarioRepository.findAll();        
+    public List<Usuario> todosUsuarios() {
+        return repo.findAll();
     }
 
     @Override
-    public Usuario getById(Long id) {
-        Optional<Usuario> usuarioOptional = usuarioRepository.findById(id);
-
-        if(usuarioOptional.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado.");
+    @PreAuthorize("isAuthenticated()")
+    public Usuario buscarPeloId(Long id) {
+        Optional<Usuario> usuarioOp = repo.findById(id);
+        if(usuarioOp.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado!");
         }
-        return usuarioOptional.get();
+        return usuarioOp.get();
+        
     }
     
 }
